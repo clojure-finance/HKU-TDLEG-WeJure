@@ -16,7 +16,7 @@
     (if web3 
       (-> (.request (. js/window -ethereum) (js-obj "method" "eth_requestAccounts"))
         (.then (fn [arg] (js->clj arg))) ;; convert result into clojure-accepted data type and assign it to accounts
-        (.then (fn [accounts] (do (swap! details assoc :account (nth accounts 0)) (println (str "@trace 1 accounts: " (nth accounts 0)))))) ;; get first account
+        (.then (fn [accounts] (do (swap! details assoc :account (nth accounts 0)) (println (str "@trace account: " (nth accounts 0)))))) ;; get first account
         (.then (fn [] (set! (. js/window -temp) contractInstance)))
         (.then (fn [] (. (. (. contractInstance -methods) profiles (:account @details)) call)))
         (.then (fn [profile] 
@@ -37,7 +37,7 @@
   )
 )
 
-(defn openFormBtn [] 
+(defn openFormBtn [{:keys [contractInstance details]}] 
   (let [open (r/atom false)]
     (fn [] 
       [:div
@@ -45,7 +45,7 @@
           {:variant "contained"
             :on-click #(do (reset! open true) (println (str @open)))}
           "Upload your photo"]
-        [photoForm open]])
+        [photoForm {:open open :contractInstance contractInstance :details details}]])
   )
 )
 
@@ -59,7 +59,7 @@
               :style {:height "50px" 
                       :margin "0 20px 0 0"}}]
           (when (= @step 2) 
-              [openFormBtn])
+              [openFormBtn {:contractInstance contractInstance :details details}])
           [:div
               {:style {:flex-grow "1"}}]
           (if (not= @step 0)

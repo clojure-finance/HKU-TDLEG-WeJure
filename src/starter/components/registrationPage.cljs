@@ -37,17 +37,18 @@
                 (if err 
                     (println (str "err: " err)) 
                     (let [hash (. (. js/JSON parse files) -Hash)]
-                        (do
-                            (. ^js (. (. contractInstance -methods) setProfile @name hash) send (js-obj "from" (:account @details)) 
-                                (fn [error txHash] ;; callback
-                                    (if error 
-                                        (println error) 
-                                        (do 
-                                            (swap! details assoc :name @name)
-                                            (swap! details assoc :profileHash hash)
-                                            (reset! loading false)
-                                            (reset! step 2)
-                                        ))))
+                        (. ^js (. (. contractInstance -methods) setProfile @name hash) send (js-obj "from" (:account @details)) 
+                            (fn [error txHash] ;; callback
+                                (if error 
+                                    (println error) 
+                                    (do 
+                                        (swap! details assoc :name @name)
+                                        (swap! details assoc :profileHash hash)
+                                        (reset! loading false)
+                                        (reset! step 2)
+                                    )
+                                )
+                            )
                         )
                     )
                 )

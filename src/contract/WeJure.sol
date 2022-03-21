@@ -12,14 +12,11 @@ contract WeJure {
     uint public picsLength = 0; // length of map
     mapping(uint => Picture) public pics;
 
-    event PictureUploaded (uint id, string ipfsHash, string description, address user);
-
     function setPicture (string memory _ipfsHash, string memory _description) public {
         require(bytes(_ipfsHash).length > 0);
         require(bytes(_description).length > 0);
         
         pics[picsLength] = Picture(_ipfsHash, _description, msg.sender);
-        emit PictureUploaded(picsLength, _ipfsHash, _description, msg.sender);
         picsLength++;
     }
 

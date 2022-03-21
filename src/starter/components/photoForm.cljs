@@ -4,6 +4,7 @@
     [reagent-mui.material.modal :refer [modal]]
     [reagent-mui.material.alert :refer [alert]]
     [reagent-mui.material.box :refer [box]]
+    [reagent-mui.material.circular-progress :refer [circular-progress]]
     [reagent-mui.material.typography :refer [typography]]
     [reagent-mui.material.button :refer [button]]
     [reagent-mui.material.icon-button :refer [icon-button]]
@@ -22,8 +23,34 @@
   (nil? @photo)
 )
 
-(defn photoForm [open] 
-  (let [photo (r/atom nil) description (r/atom nil) error (r/atom nil)]
+(defn submitPhoto [photo description contractInstance loading open details]
+  (do 
+    (reset! loading true)
+    (ifiles/add @photo
+      (fn [err files]
+        (if err
+          (println (str "err: " err))
+          (let [hash (. (. js/JSON parse files) -Hash)]
+            (. ^js (. (. contractInstance -methods) setPicture hash @description) send (js-obj "from" (:account @details)) 
+              (fn [error txHash] ;; callback
+                (if error 
+                  (println error) 
+                  (do 
+                    (reset! loading false)
+                    (reset! open false)
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+
+(defn photoForm [{:keys [open contractInstance details]}] 
+  (let [photo (r/atom nil) description (r/atom nil) error (r/atom nil) loading (r/atom false)]
     (do
       (init-ipfs {:host "https://ipfs.infura.io:5001"})
       (fn []
@@ -64,7 +91,7 @@
                       :id "upload-image"
                       :type "file"
                       :style {:display "none"}
-                      :on-change #(let [uploaded (-> % .-target .-files (aget 0))] (do (reset! photo uploaded) (set! (. js/window -temp) @photo)))}]
+                      :on-change #(let [uploaded (-> % .-target .-files (aget 0))] (reset! photo uploaded))}]
                   [icon-button 
                     {:component "span"}
                     [add-a-photo-sharp]]]
@@ -101,10 +128,11 @@
                 {:style {:margin "10px"}}]
               [button 
                 {:variant "contained"
-                  :disabled (true? (or (emptyDescription description) (emptyPhoto photo)))
+                  :disabled (or (emptyDescription description) (emptyPhoto photo) @loading)
                   :disable-elevation true
-                  :on-click #(ifiles/add @photo (fn [err files] (if err (println (str "err: " err)) (println (str "file: " files)))))}
+                  :on-click #(submitPhoto photo description contractInstance loading open details)}
                 "Submit"]
+              [circular-progress {:sx {:margin "10px" :visibility (when (not @loading) "hidden")}}]
             ]
           ]
         ]
