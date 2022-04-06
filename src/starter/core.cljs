@@ -22,7 +22,7 @@
 
 (defn init-contract [web3]
   (let [abi (. js/JSON parse (slurp "src/contract/WeJure.json"))]
-   (web3.eth.Contract. abi "0x3C8De8D04efcc12f9194Dce5aA46fEB48C294A4d")
+   (web3.eth.Contract. abi "0xDf533B05C5cC60bF9b45fDaB328f4f1BF0a2D77A")
   )
 )
 

@@ -17,7 +17,7 @@
           {:style {:display "flex" 
                     :flex-direction "column" 
                     :align-items "center"}}
-          (for [id (range @length)]
+          (for [id (reverse (range @length))]
             ^{:key id}
             [photos {:contractInstance contractInstance :id id}]
           )
